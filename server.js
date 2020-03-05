@@ -1,5 +1,4 @@
 const inquirer = require("inquirer");
-// const express = require( 'express' );
 const mysql = require( 'mysql' );
 
 class Database {
@@ -33,8 +32,7 @@ const db = new Database({
     database: "employer_tracker" 
 });
 
-// const PORT = process.env.PORT || 8080;
-// const app  = express();
+
 startPrompts();
 async function startPrompts(){
     const firstQ = await inquirer.prompt([
@@ -52,7 +50,7 @@ async function startPrompts(){
                 type: "list", 
                 name: "userViews",
                 message: "What would you like to view?", 
-                choices: ["view employees","view roles", "view departments" ]
+                choices: ["view employees","view roles", "view departments", "view all" ]
             }
         ]);
 
@@ -66,19 +64,22 @@ async function startPrompts(){
             case ("view departments"):
                 viewDep();
                 break;
+            case ("view all"):
+                viewAll();
+                break;
         }
     
-    }else if(firstQ.userChoice  == "Add"){
+    }else if (firstQ.userChoice == "Add"){
         const secondQ = await inquirer.prompt([
             {
                 type: "list", 
-                name: "options",
+                name: "userAdd",
                 message: "What would you like to add to?", 
                 choices: ["employee", "department", "role"]
             }
         ]);
 
-        switch(secondQ.options){
+        switch(secondQ.userAdd){
             case ("employee"): 
                 addEmployee();
                 break;
@@ -92,12 +93,18 @@ async function startPrompts(){
     }else {
         const secondQ = await inquirer.prompt([
             {
-                type: "list", 
-                name: "userChanges",
-                message: "What would you like to do?", 
-                choices: changesArr
+                type: "input", 
+                name: "userUpdate",
+                message: "Which employee would you like to update?", 
+            },
+            {
+                type: "input", 
+                name: "updateRole",
+                message: "Provide information to update the role.", 
             }
         ]);
+
+        updateInfo(userUpdate, updateRole);
     }
 }
 
@@ -123,7 +130,7 @@ async function addEmployee(){
         {
             type: "input",
             name: "managerId",
-            message: "What is the manager id number?"
+            message: "What is the manager id number? "
         }
     ]); 
 
@@ -170,7 +177,7 @@ async function addRole(){
     ]); 
 
     const insertRow = await db.query(
-        'INSERT INTO role(title,salary,department_id ) VALUES(?,?,?)',
+        'INSERT INTO role(title, salary, department_id ) VALUES(?,?,?)',
             [roleAdded.roleName, roleAdded.salary, roleAdded.deptId]
     );
 
@@ -182,13 +189,26 @@ async function viewEmp(){
     const sqlTable = await db.query("SELECT * FROM employee");
     console.table(sqlTable);
 }
+
 async function viewDep(){
     const sqlTable = await db.query("SELECT * FROM department");
     console.table(sqlTable);
 }
+
 async function viewRoles(){
     const sqlTable = await db.query("SELECT * FROM role");
     console.table(sqlTable);
 }
-//-------- UPDATE SECTION ------------//
 
+async function viewAll(){
+    const sqlTable = await db.query("SELECT * FROM employee LEFT JOIN role ON employee.role_id = role.RoleId LEFT JOIN department ON role.department_id = department.DepId");
+    console.table(sqlTable);
+}
+
+
+//-------- UPDATE SECTION ------------//
+async function updateInfo (userUpdateName, updateRole){
+    const updatedTable = await db.query("UPDATE employee SET role_id=? WHERE name=?", [updateRole, userUpdateName]);
+    const sqlTable = await db.query("SELECT * FROM role");
+    return updatedTable;
+}
