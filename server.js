@@ -1,19 +1,55 @@
 const inquirer = require("inquirer");
 const express = require( 'express' );
+// const orm = require( './orm' );
+const mysql = require( 'mysql' );
+
+class Database {
+    constructor( config ) {
+        this.connection = mysql.createConnection( config );
+    }
+    query( sql, args=[] ) {
+        return new Promise( ( resolve, reject ) => {
+            this.connection.query( sql, args, ( err, rows ) => {
+                if ( err )
+                    return reject( err );
+                resolve( rows );
+            } );
+        } );
+    }
+    close() {
+        return new Promise( ( resolve, reject ) => {
+            this.connection.end( err => {
+                if ( err )
+                    return reject( err );
+                resolve();
+            } );
+        } );
+    }
+}
+
+  // at top INIT DB connection
+const db = new Database({
+    host: "localhost",
+    port: 3306,
+    user: "root",
+    password: "bootcamp2020",
+    database: "greatBay" //change this
+});
 
 const PORT = process.env.PORT || 8080;
 const app  = express();
 
 app.use( express.urlencoded({ extended: false }) );
 
+startPrompts();
+
 async function startPrompts(){
-    const changesArr = ["Add", "View", "Update"]
     const firstQ = await inquirer.prompt([
         {
             type: "list", 
             name: "userChoice",
             message: "What would you like to do?", 
-            choices: changesArr
+            choices: ["Add", "View", "Update"]
         }
     ]);
 
@@ -23,7 +59,7 @@ async function startPrompts(){
                 type: "list", 
                 name: "userChanges",
                 message: "What would you like to do?", 
-                choices: changesArr
+                choices: ["view all employees","view all roles", "view all departments" ]
             }
         ]);
 
@@ -70,7 +106,7 @@ async function addEmployee(){
         {
             type: "input", 
             name: "empLastName",
-            message: "What is the employee's first name?", 
+            message: "What is the employee's last name?", 
         },
         {
             type: "input", 
@@ -79,10 +115,15 @@ async function addEmployee(){
         },
         {
             type: "input",
-            name: "managerID",
+            name: "managerId",
             message: "What is the manager id number?"
         }
     ]); 
+
+    const insertRow = await db.query(
+        'INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES(?,?,?,?)',
+            [employeeAdded.empFirstName, employeeAdded.empLastName, employeeAdded.roleId, employeeAdded.managerId]
+    );
 }
 
 async function addDepartment(){
@@ -93,29 +134,38 @@ async function addDepartment(){
             message: "Provide the name of the department", 
         }
     ]); 
+
+    const insertRow = await db.query(
+        'INSERT INTO department(name) VALUES(?)',
+            [departmentAdded.depName]
+    );
 }
 
 async function addRole(){
     const roleAdded = await inquirer.prompt([
         {
             type: "input", 
-            name: "roleId",
-            message: "Provide the roleId", 
+            name: "roleName",
+            message: "Provide the role name.", 
         },
         {
             type: "input", 
-            name: "roleId",
-            message: "Provide the salary", 
+            name: "salary",
+            message:  "What is the salary for this role?", 
         },
         {
             type: "input", 
-            name: "roleId",
-            message: "Provide the roleId", 
+            name: "deptId",
+            message: "What is the department id number?", 
         }
     ]); 
+
+    const insertRow = await db.query(
+        'INSERT INTO role(title,salary,department_id ) VALUES(?,?,?)',
+            [roleAdded.roleName, roleAdded.salary, roleAdded.deptId]
+    );
 }
 
-startPrompts();
 app.listen( PORT, function(){
     console.log( `[pictures] RUNNING, http://localhost:${PORT}` );
 });
