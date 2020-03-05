@@ -1,6 +1,5 @@
 const inquirer = require("inquirer");
-const express = require( 'express' );
-// const orm = require( './orm' );
+// const express = require( 'express' );
 const mysql = require( 'mysql' );
 
 class Database {
@@ -26,23 +25,17 @@ class Database {
         } );
     }
 }
-
-  // at top INIT DB connection
 const db = new Database({
     host: "localhost",
     port: 3306,
     user: "root",
     password: "bootcamp2020",
-    database: "greatBay" //change this
+    database: "employer_tracker" 
 });
 
-const PORT = process.env.PORT || 8080;
-const app  = express();
-
-app.use( express.urlencoded({ extended: false }) );
-
+// const PORT = process.env.PORT || 8080;
+// const app  = express();
 startPrompts();
-
 async function startPrompts(){
     const firstQ = await inquirer.prompt([
         {
@@ -53,16 +46,28 @@ async function startPrompts(){
         }
     ]);
 
-    if (firstQ.userChoice  == "View"){
+    if (firstQ.userChoice == "View"){
         const secondQ = await inquirer.prompt([
             {
                 type: "list", 
-                name: "userChanges",
-                message: "What would you like to do?", 
-                choices: ["view all employees","view all roles", "view all departments" ]
+                name: "userViews",
+                message: "What would you like to view?", 
+                choices: ["view employees","view roles", "view departments" ]
             }
         ]);
 
+        switch (secondQ.userViews) {
+            case ("view employees"):
+                viewEmp();
+                break;
+            case ("view roles"):
+                viewRoles();
+                break;
+            case ("view departments"):
+                viewDep();
+                break;
+        }
+    
     }else if(firstQ.userChoice  == "Add"){
         const secondQ = await inquirer.prompt([
             {
@@ -96,6 +101,8 @@ async function startPrompts(){
     }
 }
 
+
+//-------- ADD SECTION ------------//
 async function addEmployee(){
     const employeeAdded = await inquirer.prompt([
         {
@@ -124,6 +131,7 @@ async function addEmployee(){
         'INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES(?,?,?,?)',
             [employeeAdded.empFirstName, employeeAdded.empLastName, employeeAdded.roleId, employeeAdded.managerId]
     );
+
 }
 
 async function addDepartment(){
@@ -139,6 +147,7 @@ async function addDepartment(){
         'INSERT INTO department(name) VALUES(?)',
             [departmentAdded.depName]
     );
+
 }
 
 async function addRole(){
@@ -164,8 +173,22 @@ async function addRole(){
         'INSERT INTO role(title,salary,department_id ) VALUES(?,?,?)',
             [roleAdded.roleName, roleAdded.salary, roleAdded.deptId]
     );
+
 }
 
-app.listen( PORT, function(){
-    console.log( `[pictures] RUNNING, http://localhost:${PORT}` );
-});
+
+//-------- VIEW SECTION ------------//
+async function viewEmp(){
+    const sqlTable = await db.query("SELECT * FROM employee");
+    console.table(sqlTable);
+}
+async function viewDep(){
+    const sqlTable = await db.query("SELECT * FROM department");
+    console.table(sqlTable);
+}
+async function viewRoles(){
+    const sqlTable = await db.query("SELECT * FROM role");
+    console.table(sqlTable);
+}
+//-------- UPDATE SECTION ------------//
+
