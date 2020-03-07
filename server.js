@@ -39,7 +39,7 @@ const db = new Database({
 startPrompts();
 
 async function startPrompts(){
-    const startChoices = ["Add employee","Add department","Add role","View employees","View role","View departments","View all", "Update Employee"];
+    const startChoices = ["Add employee","Add department","Add role","View employees","View employees by Role","View employees by Department","View all", "Update Employee"];
     const firstQ = await inquirer.prompt([
         {
             type: "list", 
@@ -57,11 +57,11 @@ async function startPrompts(){
         case ("Add role"):
             return addRole();
         case ("View employees"):
-            return viewEmp();
-        case ("View role"):
-            return viewRoles();
-        case ("View departments"):
-            return viewDep();
+            return viewEmployees();
+        case ("View employees by Role"):
+            return viewEmployeesByRoles();
+        case ("View employees by Department"):
+            return viewEmployeesByDepartment();
         case ("View all"):
             return viewAll();
         case ("Update Employee"):
@@ -156,7 +156,7 @@ async function addRole(){
 
 
 //-------- VIEW SECTION ------------//
-async function viewEmp(){
+async function viewEmployees(){
     const sqlTable = await db.query("SELECT * FROM employee");
     console.table(sqlTable);
 
@@ -164,7 +164,7 @@ async function viewEmp(){
 
 };
 
-async function viewDep(){
+async function viewEmployeesByDepartment(){
     const sqlTable = await db.query("SELECT * FROM department");
     console.table(sqlTable);
 
@@ -172,8 +172,8 @@ async function viewDep(){
 
 };
 
-async function viewRoles(){
-    const sqlTable = await db.query("SELECT * FROM role");
+async function viewEmployeesByRoles(){
+    const sqlTable = await db.query("SELECT * FROM employee LEFT JOIN role ON employee.role_id = role.RoleId");
     console.table(sqlTable);
 
     startAgain();   
@@ -198,13 +198,13 @@ async function updateInfo (){
         {
             type: "input", 
             name: "updateRoleId",
-            message: "What would you to update the employee's role to?", 
+            message: "What do you want to update the employee's role to?", 
         }
     ])
     
     userUpdateName = updateEmployeeRole.empFirstName
     updateRole = updateEmployeeRole.updateRoleId;
-    const updatedTable = await db.query("UPDATE employee SET role_id=? WHERE employee_name=?", [updateRole, userUpdateName]);
+    const updatedTable = await db.query("UPDATE employee SET role_id=? WHERE first_name=?", [updateRole, userUpdateName]);
     const sqlTable = await db.query("SELECT * FROM role");
 
     startAgain();
