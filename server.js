@@ -39,7 +39,7 @@ const db = new Database({
 startPrompts();
 
 async function startPrompts(){
-    const startChoices = ["Add employee","Add department","Add role","View employees","View employees by Role","View employees by Department","View all", "Update Employee"];
+    const startChoices = ["Add employee","Add department","Add role","View employees","View employees by Role","View Department","View all", "Update Employee","Remove Employee" ];
     const firstQ = await inquirer.prompt([
         {
             type: "list", 
@@ -61,11 +61,13 @@ async function startPrompts(){
         case ("View employees by Role"):
             return viewEmployeesByRoles();
         case ("View employees by Department"):
-            return viewEmployeesByDepartment();
+            return viewDepartment();
         case ("View all"):
             return viewAll();
         case ("Update Employee"):
-            return updateInfo();
+            return updateEmployee();
+        case ("Remove Employee"):
+            return removeEmployee();
     }  
 }
 
@@ -98,6 +100,8 @@ async function addEmployee(){
         'INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES(?,?,?,?)',
             [employeeAdded.empFirstName, employeeAdded.empLastName, employeeAdded.roleId, employeeAdded.managerId]
     );
+    
+    console.log(`${employeeAdded.empFirstName} ${employeeAdded.empLastName} has been added `);
     startAgain();
 }
 
@@ -114,14 +118,8 @@ async function addDepartment(){
         'INSERT INTO department(name) VALUES(?)',
             [departmentAdded.depName]
     );
-    const askRestart = await inquirer.prompt([
-        {
-            name: "startAgain",
-            type: "input",
-            message: "Do you want to start again?"
-        }
-    ]);
 
+    console.log(`${departmentAdded.depName} has been added`);
     startAgain();
 }
 
@@ -149,6 +147,8 @@ async function addRole(){
         'INSERT INTO role(title, salary, department_id ) VALUES(?,?,?)',
             [roleAdded.roleName, roleAdded.salary, roleAdded.deptId]
     );
+
+    console.log(`${roleAdded.roleName} with salary of $${roleAdded.salary}has been added`)
     
     startAgain();
 
@@ -164,7 +164,7 @@ async function viewEmployees(){
 
 };
 
-async function viewEmployeesByDepartment(){
+async function viewDepartment(){
     const sqlTable = await db.query("SELECT * FROM department");
     console.table(sqlTable);
 
@@ -188,29 +188,45 @@ async function viewAll(){
 
 
 //-------- UPDATE SECTION ------------//
-async function updateInfo (){
+async function updateEmployee(){
     const updateEmployeeRole = await inquirer.prompt([
         {
-            type: "input", 
+            type: "list", 
             name: "empFirstName",
-            message: "What is the employee's first name?", 
+            message: "Who would you like to update?", 
         },
         {
             type: "input", 
             name: "updateRoleId",
             message: "What do you want to update the employee's role to?", 
         }
-    ])
+    ]);
     
-    userUpdateName = updateEmployeeRole.empFirstName
+    userUpdateName = updateEmployeeRole.empFirstName;
     updateRole = updateEmployeeRole.updateRoleId;
     const updatedTable = await db.query("UPDATE employee SET role_id=? WHERE first_name=?", [updateRole, userUpdateName]);
-    const sqlTable = await db.query("SELECT * FROM role");
 
+    console.log(`${updateEmployeeRole.empFirstName}'s role has been updated.`)
     startAgain();
 
 }
 
+
+//--------- DELETE SECTION
+async function removeEmployee(){
+    const removeSql = await inquirer.prompt([
+        {
+            type: "input", 
+            name: "empFirstName",
+            message: "Who would you like to remove?"
+        }
+    ]);
+
+    const deletedEmp = await db.query("DELETE FROM employee WHERE first_name=?",[removeSql.empFirstName]);
+
+
+    console.log(`${removeSql.empFirstName} has been removed.`)
+}
 async function startAgain(){
     const askUser = await inquirer.prompt([
         {
@@ -226,4 +242,5 @@ async function startAgain(){
         process.exit;
     }
 }
+
 

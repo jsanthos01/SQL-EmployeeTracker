@@ -9,7 +9,6 @@ This is a simple command-line application that manages a company's employee info
 * npm init 
 * npm install mysql
 * npm install inquirer
-
 ```
 ## Technologies Used
 
