@@ -1,7 +1,7 @@
 //Dependencies
 const inquirer = require("inquirer");
 const mysql = require( 'mysql' );
-require('events').EventEmitter.defaultMaxListeners = 15;
+require('events').EventEmitter.defaultMaxListeners = 35;
 
 //connection to my sql
 class Database {
@@ -188,7 +188,6 @@ async function addRole(){
     startAgain();
 }
 
-
 //-------- VIEW SECTION ------------//
 async function viewEmployees(){
     const sqlTable = await db.query("Select * FROM employee");
@@ -235,7 +234,6 @@ async function viewAll(){
 
 };
 
-
 //-------- UPDATE SECTION ------------//
 async function updateEmployee(){
     let roleUpdate =  await db.query(`SELECT RoleId, title FROM role `);
@@ -276,7 +274,6 @@ async function updateEmployee(){
     startAgain();
 }
 
-
 //--------- DELETE SECTION
 async function removeEmployee(){
     let employeeName =  await db.query(`SELECT first_name FROM employee `);
@@ -290,7 +287,7 @@ async function removeEmployee(){
     }
 
     // console.log(employeeChoices);
-    
+
     const removeSql = await inquirer.prompt([
         {
             type: "list", 
@@ -307,7 +304,8 @@ async function removeEmployee(){
         }
     }
     
-    console.log(`${removeSql.empFirstName} has been removed.`)
+    console.log(`${removeSql.empFirstName} has been removed.`);
+    startAgain();
 }
 
 async function startAgain(){

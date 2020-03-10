@@ -16,3 +16,7 @@ This is a simple command-line application that manages a company's employee info
 * NodeJS
 
 ## Preview
+![Demo 1](assets/demo1.gif)
+
+![Demo 2](assets/demo2.gif)
+
