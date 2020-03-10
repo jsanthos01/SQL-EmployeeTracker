@@ -61,11 +61,10 @@ INSERT INTO employee(first_name, last_name, role_id) VALUES("Hans", "Maryil", "3
 INSERT INTO employee(first_name, last_name, role_id) VALUES("Abigail", "Raja", "6");
 INSERT INTO employee(first_name, last_name, role_id) VALUES("Sarah", "Saba", "4");
 
-SELECT * FROM employee 
+SELECT first_name, last_name, title, yearly_salary,name FROM employee 
 LEFT JOIN role ON employee.role_id = role.RoleId
-LEFT JOIN department ON role.department_id = department.DepId
-;
+LEFT JOIN department ON role.department_id = department.DepId;
 
-SELECT * FROM employee LEFT JOIN role ON employee.role_id = role.RoleId;
+SELECT first_name, last_name, title, yearly_salary FROM employee LEFT JOIN role ON employee.role_id = role.RoleId;
 
-SELECT * FROM employee LEFT JOIN department ON employee.role_id = role.RoleId
+SELECT name, first_name, last_name from department LEFT JOIN role ON role.department_id = department.DepId LEFT JOIN employee ON employee.role_id = role.RoleId ;
